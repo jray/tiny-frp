@@ -3,27 +3,27 @@
 
   'use strict';
 
-  var ValStream = function( selector ) {
-    this._pipeline   = [ ];
-    this._operations = [ ];
-    this._throttle   = 10;
-    this._event      = null;
-    this._interval   = null;
+  var Stream = function( selector ) {
+    this._buffer   = [ ];
+    this._pipeline = [ ];
+    this._throttle = 10;
+    this._event    = null;
+    this._interval = null;
     this._el = document.querySelector( selector );
     return this;
   };
 
-  ValStream.prototype.on = function( event ) {
+  Stream.prototype.on = function( event ) {
     this._event = event;
     return this;
   };
 
-  ValStream.prototype.subscribe = function( onEvent ) {
+  Stream.prototype.subscribe = function( onEvent ) {
     var self = this;
     this._el.addEventListener( this._event, function( item ) {
       var valid = true;
-      for ( var i in self._operations ) {
-        var op = self._operations[ i ];
+      for ( var i in self._pipeline ) {
+        var op = self._pipeline[ i ];
 
         if ( op.map ) {
           item = op.map( item );
@@ -36,14 +36,14 @@
       }
 
       if ( valid ) {
-        self._pipeline.push( onEvent.bind( null, item ) );
+        self._buffer.push( onEvent.bind( null, item ) );
       }
     });
     this._execute();
     return this;
   };
 
-  ValStream.prototype.throttle = function( mills ) {
+  Stream.prototype.throttle = function( mills ) {
     if ( typeof mills === 'number' ) {
       this._throttle = mills;
     }
@@ -51,21 +51,21 @@
     return this;
   };
 
-  ValStream.prototype.map = function( mapFunc ) {
+  Stream.prototype.map = function( mapFunc ) {
     if ( typeof mapFunc === 'function' ) {
-      this._operations.push( { map: mapFunc } );
+      this._pipeline.push( { map: mapFunc } );
     }
     return this;
   };
 
-  ValStream.prototype.filter = function( filterFunc ) {
+  Stream.prototype.filter = function( filterFunc ) {
     if ( typeof filterFunc === 'function' ) {
-      this._operations.push( { filter: filterFunc } );
+      this._pipeline.push( { filter: filterFunc } );
     }
     return this;
   };
 
-  ValStream.prototype._execute = function() {
+  Stream.prototype._execute = function() {
     var self = this;
 
     if ( this._interval ) {
@@ -73,11 +73,20 @@
     }
 
     this._interval = setInterval(function(){
-      var response = self._pipeline.shift();
+      var response = self._buffer.shift();
       if ( typeof response === 'function' ) {
         response();
       }
     }, this._throttle);
+  };
+
+  // TODO: Do it.
+  Stream.prototype.dispose = function() {
+
+  };
+
+  var ValStream = function( selector ) {
+    return new Stream( selector );
   };
 
   if ( typeof module !== 'undefined' && module.exports ) {
