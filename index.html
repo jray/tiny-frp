@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+
+    <input id="the-input" type="text" />
+
+    <script src="index.js"></script>
+    <script>
+
+        'use strict';
+
+        var stream = new ValStream( '#the-input' );
+
+        stream
+            .on('keyup')
+            .map(function(item){
+                return item.target.value;
+            })
+            .filter(function(item){
+                return item.length > 3;
+            })
+            .map(function(item){
+                return '<<' + item + '>>';
+            })
+            .throttle( 500 )
+            .subscribe(function(item){
+                console.log(item);
+            })
+    </script>
+</body>
+</html>
