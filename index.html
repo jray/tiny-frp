@@ -20,15 +20,21 @@
                 return item.target.value;
             })
             .filter(function(item){
-                return item.length > 3;
+                return item.length > 1;
             })
             .map(function(item){
                 return '<<' + item + '>>';
             })
-            .throttle( 500 )
+            .throttle( 100 )
             .subscribe(function(item){
                 console.log(item);
-            })
+            });
+
+            setTimeout(function(){
+                console.log('disposing of event stream');
+                stream.dispose();
+                // you will no longer be notified of events
+            }, 3000);
     </script>
 </body>
 </html>

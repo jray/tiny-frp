@@ -4,23 +4,32 @@
   'use strict';
 
   var Stream = function( selector ) {
+    this._events   = [
+      'keyup',
+      'keydown',
+      'focus',
+      'blur'
+    ];
     this._buffer   = [ ];
     this._pipeline = [ ];
     this._throttle = 10;
     this._event    = null;
     this._interval = null;
+    this._onEvent  = null;
     this._el = document.querySelector( selector );
     return this;
   };
 
   Stream.prototype.on = function( event ) {
-    this._event = event;
+    if ( this._events.indexOf( event ) > -1 ) {
+      this._event = event;
+    }
     return this;
   };
 
   Stream.prototype.subscribe = function( onEvent ) {
     var self = this;
-    this._el.addEventListener( this._event, function( item ) {
+    this._onEvent = function( item ) {
       var valid = true;
       for ( var i in self._pipeline ) {
         var op = self._pipeline[ i ];
@@ -38,7 +47,9 @@
       if ( valid ) {
         self._buffer.push( onEvent.bind( null, item ) );
       }
-    });
+    };
+
+    this._el.addEventListener( this._event, this._onEvent );
     this._execute();
     return this;
   };
@@ -80,9 +91,15 @@
     }, this._throttle);
   };
 
-  // TODO: Do it.
   Stream.prototype.dispose = function() {
-
+    clearInterval( this._interval );
+    this._el.removeEventListener( this._event, this._onEvent );
+    this._buffer   = [ ];
+    this._pipeline = [ ];
+    this._throttle = 10;
+    this._event    = null;
+    this._interval = null;
+    this._onEvent  = null;
   };
 
   var ValStream = function( selector ) {
