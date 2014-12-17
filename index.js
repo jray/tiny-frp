@@ -1,9 +1,11 @@
+/* global define: false */
 
 ;(function(){
 
   'use strict';
 
-  var Stream = function( selector ) {
+  var Stream = function( id ) {
+    id = ( id.charAt( 0 ) === '#' ) ? id : '#' + id;
     this._events   = [
       'keyup',
       'keydown',
@@ -13,10 +15,15 @@
     this._buffer   = [ ];
     this._pipeline = [ ];
     this._throttle = 10;
+    this._latest   = null;
     this._event    = null;
     this._interval = null;
     this._onEvent  = null;
-    this._el = document.querySelector( selector );
+    this._el = document.querySelector( id );
+
+    if ( !this._el ) {
+      throw new Error( 'Element with id ' + id + ' does not exist' );
+    }
     return this;
   };
 
@@ -29,6 +36,8 @@
 
   Stream.prototype.subscribe = function( onEvent ) {
     var self = this;
+
+    // TODO: Refactor - so ugly.
     this._onEvent = function( item ) {
       var valid = true;
       for ( var i in self._pipeline ) {
@@ -41,11 +50,25 @@
             valid = false;
             break;
           }
+        } else if ( op.each ) {
+          op.each( item );
+        } else if ( op.pluck ) {
+          if ( typeof op.pluck !== 'function' && typeof op.pluck !== 'object' ) {
+            item = item[ op.pluck ] || null;
+          } else if ( typeof op.pluck === 'function' ) {
+            var target = op.pluck( item );
+            if ( item[ target ] ) {
+              item = item[ target ];
+            } else {
+              valid = false;
+            }
+          }
         }
       }
 
       if ( valid ) {
         self._buffer.push( onEvent.bind( null, item ) );
+        self._latest = item;
       }
     };
 
@@ -65,6 +88,18 @@
   Stream.prototype.map = function( mapFunc ) {
     if ( typeof mapFunc === 'function' ) {
       this._pipeline.push( { map: mapFunc } );
+    }
+    return this;
+  };
+
+  Stream.prototype.pluck = function( pluckOp ) {
+    this._pipeline.push( { pluck: pluckOp } );
+    return this;
+  };
+
+  Stream.prototype.each = function( eachFunc ) {
+    if ( typeof eachFunc === 'function' ) {
+      this._pipeline.push( { each: eachFunc } );
     }
     return this;
   };

@@ -17,7 +17,11 @@
         stream
             .on('keyup')
             .map(function(item){
-                return item.target.value;
+              return item.target;
+            })
+            .pluck('value')
+            .each(function(item){
+              console.log('val is ' + item)
             })
             .filter(function(item){
                 return item.length > 1;
@@ -25,16 +29,11 @@
             .map(function(item){
                 return '<<' + item + '>>';
             })
-            .throttle( 100 )
+            // .throttle( 100 )
             .subscribe(function(item){
                 console.log(item);
             });
-
-            setTimeout(function(){
-                console.log('disposing of event stream');
-                stream.dispose();
-                // you will no longer be notified of events
-            }, 3000);
     </script>
 </body>
 </html>
+
