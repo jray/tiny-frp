@@ -12,7 +12,8 @@
       'keyup',
       'keydown',
       'focus',
-      'blur'
+      'blur',
+      'mousemove'
     ];
     this._buffer   = [ ];
     this._pipeline = [ ];
