@@ -1,11 +1,13 @@
 /* global define: false */
 
-;(function(){
+;(function($){
 
   'use strict';
 
-  var Stream = function( id ) {
-    id = ( id.charAt( 0 ) === '#' ) ? id : '#' + id;
+  var Stream = function( selector ) {
+
+    this._domItems = document.querySelectorAll( selector );
+
     this._events   = [
       'keyup',
       'keydown',
@@ -19,11 +21,7 @@
     this._event    = null;
     this._interval = null;
     this._onEvent  = null;
-    this._el = document.querySelector( id );
 
-    if ( !this._el ) {
-      throw new Error( 'Element with id ' + id + ' does not exist' );
-    }
     return this;
   };
 
@@ -37,42 +35,19 @@
   Stream.prototype.subscribe = function( onEvent ) {
     var self = this;
 
-    // TODO: Refactor - so ugly.
     this._onEvent = function( item ) {
-      var valid = true;
-      for ( var i in self._pipeline ) {
-        var op = self._pipeline[ i ];
+      var result          = self._performOperation( item );
+      var transformedItem = result.item;
 
-        if ( op.map ) {
-          item = op.map( item );
-        } else if ( op.filter ) {
-          if ( !op.filter( item ) ) {
-            valid = false;
-            break;
-          }
-        } else if ( op.each ) {
-          op.each( item );
-        } else if ( op.pluck ) {
-          if ( typeof op.pluck !== 'function' && typeof op.pluck !== 'object' ) {
-            item = item[ op.pluck ] || null;
-          } else if ( typeof op.pluck === 'function' ) {
-            var target = op.pluck( item );
-            if ( item[ target ] ) {
-              item = item[ target ];
-            } else {
-              valid = false;
-            }
-          }
-        }
-      }
-
-      if ( valid ) {
-        self._buffer.push( onEvent.bind( null, item ) );
-        self._latest = item;
+      if ( result.valid ) {
+        self._buffer.push( onEvent.bind( null, transformedItem ) );
+        self._latest = transformedItem;
       }
     };
 
-    this._el.addEventListener( this._event, this._onEvent );
+    for ( var i = 0; i < this._domItems.length; i++ ) {
+      this._domItems[ i ].addEventListener( this._event, this._onEvent );
+    }
     this._execute();
     return this;
   };
@@ -111,6 +86,49 @@
     return this;
   };
 
+  Stream.prototype.dispose = function() {
+    clearInterval( this._interval );
+    this._el.removeEventListener( this._event, this._onEvent );
+    this._buffer   = [ ];
+    this._pipeline = [ ];
+    this._throttle = 10;
+    this._event    = null;
+    this._interval = null;
+    this._onEvent  = null;
+  };
+
+  // --------------------- private ---------------------
+
+  Stream.prototype._performOperation = function( item ) {
+    var valid = true;
+    for ( var i in this._pipeline ) {
+      var op = this._pipeline[ i ];
+
+      if ( op.map ) {
+        item = op.map( item );
+      } else if ( op.filter ) {
+        if ( !op.filter( item ) ) {
+          valid = false;
+          break;
+        }
+      } else if ( op.each ) {
+        op.each( item );
+      } else if ( op.pluck ) {
+        if ( typeof op.pluck !== 'function' && typeof op.pluck !== 'object' ) {
+          item = item[ op.pluck ] || null;
+        } else if ( typeof op.pluck === 'function' ) {
+          var target = op.pluck( item );
+          if ( item[ target ] ) {
+            item = item[ target ];
+          } else {
+            valid = false;
+          }
+        }
+      }
+    }
+    return { valid: valid, item: item };
+  };
+
   Stream.prototype._execute = function() {
     var self = this;
 
@@ -124,17 +142,6 @@
         response();
       }
     }, this._throttle);
-  };
-
-  Stream.prototype.dispose = function() {
-    clearInterval( this._interval );
-    this._el.removeEventListener( this._event, this._onEvent );
-    this._buffer   = [ ];
-    this._pipeline = [ ];
-    this._throttle = 10;
-    this._event    = null;
-    this._interval = null;
-    this._onEvent  = null;
   };
 
   var ValStream = function( selector ) {
@@ -152,4 +159,4 @@
     window.ValStream = ValStream;
   }
 
-}());
+}(window.jQuery));

@@ -5,14 +5,14 @@
 </head>
 <body>
 
-    <input id="the-input" type="text" />
+    <input id="the-input" class="input" type="text" />
 
     <script src="index.js"></script>
     <script>
 
         'use strict';
 
-        var stream = ValStream( '#the-input' );
+        var stream = ValStream( '.input' );
 
         stream
             .on('keyup')
