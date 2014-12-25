@@ -2,6 +2,7 @@
 <html>
 <head>
     <title></title>
+    <style type="text/css"></style>
 </head>
 <body>
 
@@ -16,19 +17,19 @@
 
         stream
             .on('keyup')
-            // .map(function(item){
-            //   return item.target;
-            // })
-            // .pluck('value')
-            // .each(function(item){
-            //   console.log('val is ' + item)
-            // })
-            // .filter(function(item){
-            //     return item.length > 1;
-            // })
-            // .map(function(item){
-            //     return '<<' + item + '>>';
-            // })
+            .map(function(item){
+              return item.target;
+            })
+            .pluck('value')
+            .each(function(item){
+              console.log('val is ' + item)
+            })
+            .filter(function(item){
+                return item.length > 1;
+            })
+            .map(function(item){
+                return '<<' + item + '>>';
+            })
             .throttle( 100 )
             .subscribe(function(item){
                 console.log(item);
