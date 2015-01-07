@@ -154,19 +154,19 @@
     return api;
   };
 
-  var ValStream = function( selector ) {
+  var TinyFRP = function( selector ) {
     return stream( selector );
   };
 
   if ( typeof module !== 'undefined' && module.exports ) {
-    module.exports = ValStream;
+    module.exports = TinyFRP;
   } else if ( typeof define !== 'undefined' && define.amd ) {
     // AMD compatibility
     define([], function () {
-      return ValStream;
+      return TinyFRP;
     });
   } else {
-    window.ValStream = ValStream;
+    window.TinyFRP = TinyFRP;
   }
 
 }(window.jQuery));

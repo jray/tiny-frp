@@ -4,7 +4,7 @@
 My attempt to extract the dom event stream stuff that makes RxJS and BaconJS so cool. No need to pull in those libraries just for that functionality. If you need a more complete RFP library then you should use one of those.
 
 ```javascript
-    var stream = ValStream( '#the-input' );
+    var stream = TinyFRP( '#the-input' );
 
     stream
         .on('keyup')
