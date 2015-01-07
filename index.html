@@ -2,38 +2,214 @@
 <html>
 <head>
     <title></title>
-    <style type="text/css"></style>
+    <style type="text/css">
+
+        body {
+            font-family: effra,sans-serif;
+        }
+
+        .timeline {
+            position: absolute;
+            width:100%;
+            height:5px;
+            left:0;
+            top:50%;
+            background: #03A9F4;
+        }
+
+        .timeline-item {
+            position: absolute;
+            left: 95%;
+            opacity: 0;
+            -webkit-transition: left .1s ease, opacity .5s ease;
+            float:left;
+        }
+
+        .node {
+            width: 60px;
+            height: 60px;
+            border-radius: 60px;
+            background: #F44336;
+            top:-27px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.23),0 3px 10px rgba(0,0,0,0.16);
+        }
+
+        .kill {
+            width: 64px;
+            height: 64px;
+            background: url(skull.png);
+            top: -35px;
+        }
+
+        .heart {
+            width: 64px;
+            height: 64px;
+            top: -35px;
+        }
+
+        .heart img {
+            width: 100%;
+        }
+
+        .node--visible {
+            opacity: 1;
+        }
+
+        .val {
+            position: relative;
+            font-size: 25px;
+            text-align: center;
+            width: 100%;
+            font-weight: bold;
+            top: 20%;
+            color: white;
+        }
+
+        .input-wrapper {
+            width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 10%;
+            height: 50px;
+        }
+
+        #the-input {
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            letter-spacing: 1px;
+            color: #212121;
+        }
+
+        .label {
+            position: absolute;
+            top: -70px;
+            font-size: 30px;
+            text-transform: uppercase;
+        }
+
+        .label--now {
+            left: 92%;
+        }
+
+        .label--past {
+            left: 2%;
+        }
+
+
+
+
+    </style>
 </head>
 <body>
 
-    <input id="the-input" class="input" type="text" />
+<!--     <div class="heart">
+        <img src="heart.svg" />
+    </div> -->
 
+    <div class="input-wrapper">
+        <input id="the-input" class="input" type="text" />
+    </div>
+
+    <div class="timeline">
+        <span class="label label--past">Past</span>
+        <span class="label label--now">Now</span>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="lib/verge.min.js"></script>
     <script src="index.js"></script>
     <script>
 
         'use strict';
 
-        var stream = ValStream( '#the-input' );
+        $.extend( window.verge );
 
-        stream
-            .on('keyup')
-            .map(function(item){
-              return item.target;
-            })
-            .pluck('value')
-            .each(function(item){
-              console.log('val is ' + item)
-            })
-            .filter(function(item){
-                return item.length > 1;
-            })
-            .map(function(item){
-                return '<<' + item + '>>';
-            })
-            .throttle( 100 )
-            .subscribe(function(item){
-                console.log(item);
+        var validRegex  = /^[0-9a-zA-Z]+$/;
+        var $timeline   = $( '.timeline' );
+        var stream;
+
+        function delayReveal( $node ) {
+            setTimeout(function(){
+                $node.addClass( 'node--visible' );
+            }, 100);
+        }
+
+        function createNode( item ) {
+            var node = $( '<div></div>' )
+                .addClass( 'node' )
+                .addClass( 'timeline-item' );
+            var val = $( '<div></div>' ).addClass( 'val' );
+            val.html( item );
+            node.append( val );
+            $timeline.append( node );
+            delayReveal( node );
+
+        }
+
+        function kill() {
+            stream.dispose();
+            var killIcon = $('<div></div>')
+                .addClass( 'kill' )
+                .addClass( 'timeline-item' );
+            $timeline.append( killIcon );
+            delayReveal( killIcon );
+        }
+
+        function step() {
+            $( '.timeline-item' ).each(function(){
+                var $node = $( this );
+                var currPos = parseInt( $node.css( 'left' ) );
+                var newPos = currPos -= 10;
+                $node.css( 'left', newPos );
+                if ( !$.inViewport( $node ) ) {
+                    $node.remove();
+                }
             });
+            window.requestAnimationFrame( step );
+        }
+
+        window.requestAnimationFrame( step );
+
+        stream = ValStream( '#the-input' )
+
+            .on( 'keyup' )
+
+            .pluck( 'target' )
+
+            .pluck( 'value' )
+
+            .filter(function( item ) {
+                return ( typeof item !== 'undefined' &&
+                         item !== null );
+            })
+
+            .map(function( item ){
+                var index = item.length - 1;
+                return item[ index ];
+            })
+
+            .filter(function( item ) {
+                return validRegex.test( item );
+            })
+
+            .each( createNode )
+
+            .subscribe();
+
+        // setTimeout( kill, 5000 );
+
+        // setTimeout( function(){
+        //     var liveIcon = $('<div></div>')
+        //         .addClass( 'heart' )
+        //         .addClass( 'timeline-item' );
+        //     var liveImg = $('<img/>').attr( 'src', 'heart.svg' );
+        //     liveIcon.append( liveImg );
+        //     $timeline.append( liveIcon );
+        //     delayReveal( liveIcon );
+        //     stream.subscribe();
+        // }, 6000 );
     </script>
 </body>
 </html>

@@ -48,6 +48,7 @@
               item = item[ target ];
             } else {
               valid = false;
+              break;
             }
           }
         }
@@ -78,6 +79,7 @@
       }, // end on
 
       subscribe: function( onEvent ) {
+        onEvent = onEvent || function(){};
         _onEvent = function( item ) {
           var result          = _performOperation( item );
           var transformedItem = result.item;
@@ -128,6 +130,11 @@
         }
         return api;
       }, // end filter
+
+      dedup: function() {
+        // _pipeline.push( { dedup: true } );
+        return api;
+      },
 
       dispose: function() {
         clearInterval( _interval );
