@@ -37,7 +37,7 @@
         .kill {
             width: 64px;
             height: 64px;
-            background: url(skull.png);
+            background: url(img/skull.png);
             top: -35px;
         }
 
@@ -126,8 +126,7 @@
 
         $.extend( window.verge );
 
-        var validRegex  = /^[0-9a-zA-Z]+$/;
-        var $timeline   = $( '.timeline' );
+        var $timeline = $( '.timeline' );
         var stream;
 
         function delayReveal( $node ) {
@@ -191,25 +190,13 @@
             })
 
             .filter(function( item ) {
-                return validRegex.test( item );
+                return /^[0-9a-zA-Z]+$/.test( item );
             })
 
             .each( createNode )
 
             .subscribe();
 
-        // setTimeout( kill, 5000 );
-
-        // setTimeout( function(){
-        //     var liveIcon = $('<div></div>')
-        //         .addClass( 'heart' )
-        //         .addClass( 'timeline-item' );
-        //     var liveImg = $('<img/>').attr( 'src', 'heart.svg' );
-        //     liveIcon.append( liveImg );
-        //     $timeline.append( liveIcon );
-        //     delayReveal( liveIcon );
-        //     stream.subscribe();
-        // }, 6000 );
     </script>
 </body>
 </html>

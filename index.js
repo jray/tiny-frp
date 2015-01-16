@@ -26,6 +26,8 @@
 
     function _performOperation ( item ) {
       var valid = true;
+      var transformedItem;
+
       for ( var i in _pipeline ) {
         var op = _pipeline[ i ];
 
@@ -71,6 +73,7 @@
     }  // end _execute
 
     api = {
+      // assign the type of event we'll be listening for
       on: function( event ) {
         if ( _events.indexOf( event ) > -1 ) {
           _event = event;
@@ -78,9 +81,10 @@
         return api;
       }, // end on
 
+      // we actuall start to listen for event
       subscribe: function( onEvent ) {
-        onEvent = onEvent || function(){};
-        _onEvent = function( item ) {
+        onEvent   = onEvent || function(){};
+        _onEvent  = function( item ) {
           var result          = _performOperation( item );
           var transformedItem = result.item;
 
